@@ -18,4 +18,6 @@ default = []
 [dependencies]
 anchor-lang = "0.28.0"
 borsh = "0.10.3"
+solana-security-txt = "1.1.1"
+spl-account-compression = { version = "0.2.0", features = ["no-entrypoint", "cpi"] }
 thiserror = "1.0.48"

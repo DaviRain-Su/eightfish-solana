@@ -27,3 +27,9 @@ pub struct IdHashPair {
     pub id_type: EightFishId,
     pub hash_type: Hash,
 }
+
+#[account]
+pub struct Controller {
+    pub authority: Pubkey,
+    pub merkle_tree: Pubkey,
+}
