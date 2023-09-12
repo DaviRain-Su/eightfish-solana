@@ -1,6 +1,7 @@
 use crate::state::EightfishStorage;
 use anchor_lang::prelude::*;
 
+/// Initialize the EightfishStorage account
 #[derive(Accounts)]
 pub struct Initialize<'info> {
     #[account(
@@ -16,6 +17,7 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
+///
 #[derive(Accounts)]
 pub struct ActInstruction<'info> {
     #[account(
