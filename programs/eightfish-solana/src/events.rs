@@ -20,13 +20,13 @@ pub struct IndexUpdated {
 }
 
 #[event]
-pub struct Upgrade {
+pub struct WasmUpgrade {
     pub wasm_file_new_flag: bool,
     pub block_time: i64,
 }
 
 #[event]
-pub struct DisableUpgrade {
+pub struct DisableUpgradeWasm {
     pub wasm_file_new_flag: bool,
     pub block_time: i64,
 }

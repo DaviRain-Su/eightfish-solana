@@ -106,6 +106,14 @@ pub struct WasmUpgradeInstruction<'info> {
         has_one = merkle_tree,
     )]
     pub tree_controller: Account<'info, Controller>,
+
+    #[account(
+        mut,
+        seeds = [EIGHTFISH_SEED],
+        bump,
+    )]
+    pub eight_fish: Account<'info, EightfishStorage>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 
@@ -127,6 +135,14 @@ pub struct DisableWasmUpgradeFlagInstruction<'info> {
         has_one = merkle_tree,
     )]
     pub tree_controller: Account<'info, Controller>,
+
+    #[account(
+        mut,
+        seeds = [EIGHTFISH_SEED],
+        bump,
+    )]
+    pub eight_fish: Account<'info, EightfishStorage>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 

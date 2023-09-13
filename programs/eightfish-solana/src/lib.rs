@@ -107,27 +107,53 @@ pub mod eightfish_solana {
     /// This dispatchable is used to record the id-hash pair coresponding to the off-chain sql
     /// db table rows
     pub fn update_index(
-        _ctx: Context<ActInstruction>,
-        _model: ModelName,
-        _reqid: Payload,
-        _id: EightFishId,
-        _hash: Hash,
+        ctx: Context<UpdataIndexInstruction>,
+        model: ModelName,
+        reqid: Payload,
+        id: EightFishId,
+        hash: Hash,
     ) -> Result<()> {
         todo!()
     }
 
     /// Upload a new off-chain wasm runtime file to the on-chain storage, and once updated, set
     /// the new file flag.
-    pub fn wasm_upgrade(_ctx: Context<WasmUpgradeInstruction>, _wasm_file: Vec<u8>) -> Result<()> {
-        todo!()
+    pub fn wasm_upgrade(ctx: Context<WasmUpgradeInstruction>, wasm_file: Vec<u8>) -> Result<()> {
+        let block_time = Clock::get()?.unix_timestamp;
+
+        let eight_fish = ctx.accounts.eight_fish.deref_mut();
+
+        eight_fish.wasm_file = wasm_file;
+        eight_fish.wasm_file_new_flag = true;
+
+        emit!(WasmUpgrade {
+            block_time,
+            wasm_file_new_flag: eight_fish.wasm_file_new_flag
+        });
+
+        Ok(())
     }
 
     /// Once the offchain wasm worker retrieve the new wasm file, disable the wasm file flag.
     /// This is not a beautiful but easy and workable solution right now.
     pub fn disable_wasm_upgrade_flag(
-        _ctx: Context<DisableWasmUpgradeFlagInstruction>,
+        ctx: Context<DisableWasmUpgradeFlagInstruction>,
     ) -> Result<()> {
-        todo!()
+        let block_time = Clock::get()?.unix_timestamp;
+
+        let eight_fish = ctx.accounts.eight_fish.deref_mut();
+
+        eight_fish.wasm_file_new_flag = false;
+
+        // In this call function, we do nothing now, excepting emitting the event back
+        // This trick is to record the original requests from users to the blocks,
+        // but not record it to the on-chain storage.
+        emit!(DisableUpgradeWasm {
+            block_time,
+            wasm_file_new_flag: eight_fish.wasm_file_new_flag
+        });
+
+        Ok(())
     }
 }
 
