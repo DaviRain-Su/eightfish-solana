@@ -1,5 +1,7 @@
-use crate::types::{Id as EightFishId, *};
-use anchor_lang::prelude::*;
+use crate::types::*;
+use crate::types::*;
+use anchor_lang::{prelude::*, solana_program::keccak};
+use spl_account_compression::Node;
 
 #[account]
 #[derive(Default)]
@@ -10,22 +12,30 @@ pub struct EightfishStorage {
     pub wasm_file: Vec<u8>,
     /// Is the wasm file fresh updated
     pub wasm_file_new_flag: bool,
-    pub id_hash_pair_map: IdHashPair,
     ///
     pub authority: Pubkey,
-    pub bump: u8,
 }
 
 impl EightfishStorage {
-    pub const SIZE: usize = 8 + 1024 + 1 + EightFishId::SIZE + Hash::SIZE + 32 + 1;
+    pub const SIZE: usize = 8 + 1024 + 1 + 32;
 }
 
-/// The Id-Hash pair map storage coresponding to the off-chain sql db table rows
 #[account]
-#[derive(Default, Debug)]
-pub struct IdHashPair {
+pub struct EightFishCompressionStorage {
+    pub model_name: ModelName,
     pub id_type: EightFishId,
     pub hash_type: Hash,
+}
+
+impl EightFishCompressionStorage {
+    pub fn to_node(&self) -> Node {
+        keccak::hashv(&[
+            self.model_name.try_to_vec().unwrap_or_default().as_ref(),
+            self.id_type.try_to_vec().unwrap_or_default().as_ref(),
+            self.hash_type.try_to_vec().unwrap_or_default().as_ref(),
+        ])
+        .to_bytes()
+    }
 }
 
 #[account]

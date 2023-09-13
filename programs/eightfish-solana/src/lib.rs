@@ -8,16 +8,18 @@ use spl_account_compression::{cpi as spl_ac_cpi, program::SplAccountCompression,
 declare_id!("33ERWC5kkcD3as36pQcfckTEBF4di9MMaveqYyxiLk1R");
 
 pub mod errors;
+pub mod events;
 pub mod state;
 pub mod structions;
 pub mod types;
 
-use errors::ErrorCode;
+use errors::*;
+use events::*;
 use state::*;
 use structions::*;
 use types::*;
 
-use types::Id as EightFishId;
+use types::EightFishId;
 
 #[program]
 pub mod eightfish_solana {
@@ -30,9 +32,6 @@ pub mod eightfish_solana {
         max_depth: u32,
         max_buffer_size: u32,
     ) -> Result<()> {
-        // const MAX_DEPTH: u32 = 30; // 1 billion possible entries
-        // const MAX_BUFFER_SIZE: u32 = 2048; // tbd
-
         let accounts = spl_ac_cpi::accounts::Initialize {
             merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
             authority: ctx.accounts.tree_controller.to_account_info(),
@@ -57,6 +56,15 @@ pub mod eightfish_solana {
             merkle_tree: ctx.accounts.merkle_tree.key(),
         });
 
+        let eight_fish = ctx.accounts.eight_fish.deref_mut();
+
+        *eight_fish = EightfishStorage {
+            nonce: 0,
+            wasm_file: vec![],
+            wasm_file_new_flag: false,
+            authority: ctx.accounts.authority.key(),
+        };
+
         Ok(())
     }
 
@@ -68,12 +76,32 @@ pub mod eightfish_solana {
     /// parameters are very important for a deterministic computation in the decentralized
     /// system.
     pub fn act(
-        _ctx: Context<ActInstruction>,
-        _model: ModelName,
-        _action: ActionName,
-        _payload: Payload,
+        ctx: Context<ActInstruction>,
+        model: ModelName,
+        action: ActionName,
+        payload: Payload,
     ) -> Result<()> {
-        todo!()
+        let block_time = Clock::get()?.unix_timestamp;
+
+        // random value
+        let eight_fish = ctx.accounts.eight_fish.deref_mut();
+        eight_fish.nonce = eight_fish.nonce.wrapping_add(1);
+        let random_value = generate_random(eight_fish.nonce);
+
+        // In this call function, we do nothing now, excepting emitting the event back
+        // This trick is to record the original requests from users to the blocks,
+        // but not record it to the on-chain state storage.
+        //
+        emit!(Action {
+            model_name: model,
+            action_name: action,
+            payload,
+            block_time,
+            random_output: random_value,
+            nonce: eight_fish.nonce,
+        });
+
+        Ok(())
     }
 
     /// This dispatchable is used to record the id-hash pair coresponding to the off-chain sql
@@ -101,4 +129,12 @@ pub mod eightfish_solana {
     ) -> Result<()> {
         todo!()
     }
+}
+
+fn generate_random(mut seed: u64) -> u64 {
+    seed ^= seed >> 12;
+    seed ^= seed << 25;
+    seed ^= seed >> 27;
+    seed *= 0x2545F4914F6CDD1D;
+    seed
 }

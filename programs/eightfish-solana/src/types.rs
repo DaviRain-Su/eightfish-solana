@@ -2,9 +2,9 @@ use anchor_lang::prelude::*;
 use borsh::{BorshDeserialize, BorshSerialize};
 
 #[derive(Debug, Clone, BorshDeserialize, BorshSerialize, Default)]
-pub struct Id(String);
+pub struct EightFishId(String);
 
-impl Id {
+impl EightFishId {
     pub const SIZE: usize = 1024;
 }
 
@@ -30,7 +30,7 @@ impl ActionName {
 }
 
 #[derive(Debug, Clone, BorshDeserialize, BorshSerialize, Default)]
-pub struct Payload(String);
+pub struct Payload(Vec<u8>);
 
 impl Payload {
     pub const SIZE: usize = 1024;

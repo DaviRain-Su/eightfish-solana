@@ -5,6 +5,7 @@ use anchor_lang::prelude::*;
 use spl_account_compression::{cpi as spl_ac_cpi, program::SplAccountCompression, Node, Noop};
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";
+pub const EIGHTFISH_SEED: &[u8] = b"eightfish";
 
 /// Initialize the EightfishStorage account
 #[derive(Accounts)]
@@ -21,6 +22,15 @@ pub struct Initialize<'info> {
             bump,
     )]
     pub tree_controller: Account<'info, Controller>,
+
+    #[account(
+            init,
+            space = 8 + EightfishStorage::SIZE,
+            payer = payer,
+            seeds = [EIGHTFISH_SEED],
+            bump,
+    )]
+    pub eight_fish: Account<'info, EightfishStorage>,
 
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -46,6 +56,14 @@ pub struct ActInstruction<'info> {
         has_one = merkle_tree,
     )]
     pub tree_controller: Account<'info, Controller>,
+
+    #[account(
+        mut,
+        seeds = [EIGHTFISH_SEED],
+        bump,
+    )]
+    pub eight_fish: Account<'info, EightfishStorage>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 
