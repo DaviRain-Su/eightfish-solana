@@ -6,6 +6,9 @@ use anchor_lang::prelude::*;
 use spl_account_compression::cpi as spl_ac_cpi;
 use std::ops::DerefMut;
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_security_txt::security_txt;
+
 declare_id!("33ERWC5kkcD3as36pQcfckTEBF4di9MMaveqYyxiLk1R");
 
 pub mod errors;
@@ -21,6 +24,18 @@ use structions::*;
 use types::*;
 
 use types::EightFishId;
+
+#[cfg(not(feature = "no-entrypoint"))]
+security_txt! {
+    name: "eightfish on solana core program",
+    project_url: "https://github.com/eightfish-org",
+    contacts: "email:davirian.yin@gmail.com",
+    policy: "Please report (suspected) security vulnerabilities to email above.
+You will receive a response from us within 48 hours.",
+    source_code: "https://github.com/DaviRain-Su/eightfish-solana",
+    source_revision: env!("GIT_HASH"),
+    acknowledgements: "Everyone in the Solana community"
+}
 
 #[program]
 pub mod eightfish_solana {
