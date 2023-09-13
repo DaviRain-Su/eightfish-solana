@@ -1,9 +1,9 @@
 #![allow(clippy::result_large_err)]
-#![allow(unused_variables)]
-#![allow(unused_imports)]
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
 
 use anchor_lang::prelude::*;
-use spl_account_compression::{cpi as spl_ac_cpi, program::SplAccountCompression, Node, Noop};
+use spl_account_compression::cpi as spl_ac_cpi;
 use std::ops::DerefMut;
 
 declare_id!("33ERWC5kkcD3as36pQcfckTEBF4di9MMaveqYyxiLk1R");

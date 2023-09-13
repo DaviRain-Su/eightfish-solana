@@ -2,7 +2,7 @@ use crate::state::Controller;
 use crate::state::EightfishStorage;
 
 use anchor_lang::prelude::*;
-use spl_account_compression::{cpi as spl_ac_cpi, program::SplAccountCompression, Node, Noop};
+use spl_account_compression::{program::SplAccountCompression, Noop};
 
 pub const CONTROLLER_SEED: &[u8] = b"controller";
 pub const EIGHTFISH_SEED: &[u8] = b"eightfish";
