@@ -113,7 +113,49 @@ pub mod eightfish_solana {
         id: EightFishId,
         hash: Hash,
     ) -> Result<()> {
-        todo!()
+        let block_time = Clock::get()?.unix_timestamp;
+
+        let leaf = EightFishCompressionStorage {
+            model_name: model.clone(),
+            id: id.clone(),
+            hash,
+        };
+
+        let node = leaf.to_node();
+
+        let accounts = spl_ac_cpi::accounts::Modify {
+            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
+            authority: ctx.accounts.tree_controller.to_account_info(),
+            noop: ctx.accounts.noop_program.to_account_info(),
+        };
+
+        let bump = *ctx.bumps.get("tree_controller").unwrap();
+        let signer_seeds: &[&[&[u8]]] = &[&[CONTROLLER_SEED, &[bump]]];
+
+        let cpi_ctx = CpiContext::new(ctx.accounts.compression_program.to_account_info(), accounts)
+            .with_signer(signer_seeds);
+
+        spl_ac_cpi::append(cpi_ctx, node)?;
+
+        // We need to pass back the `reqid` and instance `id` info for further uses.
+        let mut payload: Vec<u8> = Vec::new();
+        payload.extend_from_slice(&reqid.into_bytes());
+        payload.push(b':');
+        payload.extend_from_slice(&id.into_bytes());
+
+        require!(
+            payload.len() <= Payload::SIZE,
+            EightFishError::PayloadTooLarge
+        );
+
+        emit!(IndexUpdated {
+            model_name: model,
+            action_name: "update_index".into(),
+            payload: payload.into(),
+            block_time,
+        });
+
+        Ok(())
     }
 
     /// Upload a new off-chain wasm runtime file to the on-chain storage, and once updated, set

@@ -23,16 +23,16 @@ impl EightfishStorage {
 #[account]
 pub struct EightFishCompressionStorage {
     pub model_name: ModelName,
-    pub id_type: EightFishId,
-    pub hash_type: Hash,
+    pub id: EightFishId,
+    pub hash: Hash,
 }
 
 impl EightFishCompressionStorage {
     pub fn to_node(&self) -> Node {
         keccak::hashv(&[
             self.model_name.try_to_vec().unwrap_or_default().as_ref(),
-            self.id_type.try_to_vec().unwrap_or_default().as_ref(),
-            self.hash_type.try_to_vec().unwrap_or_default().as_ref(),
+            self.id.try_to_vec().unwrap_or_default().as_ref(),
+            self.hash.try_to_vec().unwrap_or_default().as_ref(),
         ])
         .to_bytes()
     }
