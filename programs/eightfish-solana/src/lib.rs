@@ -157,9 +157,7 @@ pub mod eightfish_solana {
     /// the new file flag.
     pub fn wasm_upgrade(ctx: Context<WasmUpgradeInstruction>, wasm_file: Vec<u8>) -> Result<()> {
         let block_time = Clock::get()?.unix_timestamp;
-
         let eight_fish = ctx.accounts.eight_fish.deref_mut();
-
         eight_fish.wasm_file = wasm_file;
         eight_fish.wasm_file_new_flag = true;
 
@@ -177,9 +175,7 @@ pub mod eightfish_solana {
         ctx: Context<DisableWasmUpgradeFlagInstruction>,
     ) -> Result<()> {
         let block_time = Clock::get()?.unix_timestamp;
-
         let eight_fish = ctx.accounts.eight_fish.deref_mut();
-
         eight_fish.wasm_file_new_flag = false;
 
         // In this call function, we do nothing now, excepting emitting the event back
