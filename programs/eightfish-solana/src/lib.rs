@@ -4,6 +4,7 @@
 
 use anchor_lang::prelude::*;
 use spl_account_compression::{cpi as spl_ac_cpi, program::SplAccountCompression, Node, Noop};
+use std::ops::DerefMut;
 
 declare_id!("33ERWC5kkcD3as36pQcfckTEBF4di9MMaveqYyxiLk1R");
 
@@ -23,8 +24,6 @@ use types::EightFishId;
 
 #[program]
 pub mod eightfish_solana {
-    use std::ops::DerefMut;
-
     use super::*;
 
     pub fn initialize(
@@ -137,11 +136,7 @@ pub mod eightfish_solana {
 
         spl_ac_cpi::append(cpi_ctx, node)?;
 
-        // We need to pass back the `reqid` and instance `id` info for further uses.
-        let mut payload: Vec<u8> = Vec::new();
-        payload.extend_from_slice(&reqid.into_bytes());
-        payload.push(b':');
-        payload.extend_from_slice(&id.into_bytes());
+        let payload = Payload::generate_payload(reqid, id);
 
         require!(
             payload.len() <= Payload::SIZE,
@@ -151,7 +146,7 @@ pub mod eightfish_solana {
         emit!(IndexUpdated {
             model_name: model,
             action_name: "update_index".into(),
-            payload: payload.into(),
+            payload,
             block_time,
         });
 

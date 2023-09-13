@@ -51,10 +51,23 @@ impl Payload {
         self.0
     }
 
-    pub fn into_bytes(self) -> [u8; Self::SIZE] {
+    pub fn into_bytes(&self) -> [u8; Self::SIZE] {
         let mut bytes = [0u8; Self::SIZE];
         bytes.copy_from_slice(&self.0);
         bytes
+    }
+
+    pub fn generate_payload(payload: Payload, id: EightFishId) -> Self {
+        let mut raw_payload: Vec<u8> = Vec::new();
+        raw_payload.extend_from_slice(&payload.into_bytes());
+        raw_payload.push(b':');
+        raw_payload.extend_from_slice(&id.into_bytes());
+
+        raw_payload.into()
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 }
 
