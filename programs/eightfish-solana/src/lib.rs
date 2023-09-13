@@ -1,29 +1,28 @@
 #![allow(clippy::result_large_err)]
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
 
 use anchor_lang::prelude::*;
 use spl_account_compression::cpi as spl_ac_cpi;
-use std::ops::DerefMut;
 
 #[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
 declare_id!("33ERWC5kkcD3as36pQcfckTEBF4di9MMaveqYyxiLk1R");
 
+pub mod constant;
 pub mod errors;
 pub mod events;
+pub mod instructions;
 pub mod state;
-pub mod structions;
 pub mod types;
 
+use constant::*;
 use errors::*;
 use events::*;
-use state::*;
-use structions::*;
-use types::*;
 
+use instructions::*;
+use state::*;
 use types::EightFishId;
+use types::*;
 
 #[cfg(not(feature = "no-entrypoint"))]
 security_txt! {
@@ -46,40 +45,7 @@ pub mod eightfish_solana {
         max_depth: u32,
         max_buffer_size: u32,
     ) -> Result<()> {
-        let accounts = spl_ac_cpi::accounts::Initialize {
-            merkle_tree: ctx.accounts.merkle_tree.to_account_info(),
-            authority: ctx.accounts.tree_controller.to_account_info(),
-            noop: ctx.accounts.noop_program.to_account_info(),
-        };
-
-        let signer_seeds: &[&[&[u8]]] = &[&[
-            CONTROLLER_SEED,
-            &[*ctx.bumps.get("tree_controller").unwrap()],
-        ]];
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.compression_program.to_account_info(),
-            accounts,
-            signer_seeds,
-        );
-
-        spl_ac_cpi::init_empty_merkle_tree(cpi_ctx, max_depth, max_buffer_size)?;
-
-        ctx.accounts.tree_controller.set_inner(Controller {
-            authority: ctx.accounts.authority.key(),
-            merkle_tree: ctx.accounts.merkle_tree.key(),
-        });
-
-        let eight_fish = ctx.accounts.eight_fish.deref_mut();
-
-        *eight_fish = EightfishStorage {
-            nonce: 0,
-            wasm_file: vec![],
-            wasm_file_new_flag: false,
-            authority: ctx.accounts.authority.key(),
-        };
-
-        Ok(())
+        initialize_instruction(ctx, max_depth, max_buffer_size)
     }
 
     /// This is a delegator dispatchable. Its main aim is to pass the validation of the
@@ -95,27 +61,7 @@ pub mod eightfish_solana {
         action: ActionName,
         payload: Payload,
     ) -> Result<()> {
-        let block_time = Clock::get()?.unix_timestamp;
-
-        // random value
-        let eight_fish = ctx.accounts.eight_fish.deref_mut();
-        eight_fish.nonce = eight_fish.nonce.wrapping_add(1);
-        let random_value = generate_random(eight_fish.nonce);
-
-        // In this call function, we do nothing now, excepting emitting the event back
-        // This trick is to record the original requests from users to the blocks,
-        // but not record it to the on-chain state storage.
-        //
-        emit!(Action {
-            model_name: model,
-            action_name: action,
-            payload,
-            block_time,
-            random_output: random_value,
-            nonce: eight_fish.nonce,
-        });
-
-        Ok(())
+        act_instruction(ctx, model, action, payload)
     }
 
     /// This dispatchable is used to record the id-hash pair coresponding to the off-chain sql
@@ -171,17 +117,7 @@ pub mod eightfish_solana {
     /// Upload a new off-chain wasm runtime file to the on-chain storage, and once updated, set
     /// the new file flag.
     pub fn wasm_upgrade(ctx: Context<WasmUpgradeInstruction>, wasm_file: Vec<u8>) -> Result<()> {
-        let block_time = Clock::get()?.unix_timestamp;
-        let eight_fish = ctx.accounts.eight_fish.deref_mut();
-        eight_fish.wasm_file = wasm_file;
-        eight_fish.wasm_file_new_flag = true;
-
-        emit!(WasmUpgrade {
-            block_time,
-            wasm_file_new_flag: eight_fish.wasm_file_new_flag
-        });
-
-        Ok(())
+        wasm_upgrade_instruction(ctx, wasm_file)
     }
 
     /// Once the offchain wasm worker retrieve the new wasm file, disable the wasm file flag.
@@ -189,19 +125,7 @@ pub mod eightfish_solana {
     pub fn disable_wasm_upgrade_flag(
         ctx: Context<DisableWasmUpgradeFlagInstruction>,
     ) -> Result<()> {
-        let block_time = Clock::get()?.unix_timestamp;
-        let eight_fish = ctx.accounts.eight_fish.deref_mut();
-        eight_fish.wasm_file_new_flag = false;
-
-        // In this call function, we do nothing now, excepting emitting the event back
-        // This trick is to record the original requests from users to the blocks,
-        // but not record it to the on-chain storage.
-        emit!(DisableUpgradeWasm {
-            block_time,
-            wasm_file_new_flag: eight_fish.wasm_file_new_flag
-        });
-
-        Ok(())
+        disable_wasm_upgrade_flag_instruction(ctx)
     }
 }
 
