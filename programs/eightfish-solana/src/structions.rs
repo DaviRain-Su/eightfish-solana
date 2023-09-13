@@ -44,31 +44,16 @@ pub struct Initialize<'info> {
 ///
 #[derive(Accounts)]
 pub struct ActInstruction<'info> {
-    pub authority: Signer<'info>,
-
-    /// CHECK: key is checked
-    #[account(mut)]
-    pub merkle_tree: AccountInfo<'info>,
-
-    #[account(
-        seeds = [CONTROLLER_SEED],
-        bump,
-        has_one = merkle_tree,
-    )]
-    pub tree_controller: Account<'info, Controller>,
-
     #[account(
         mut,
+        has_one = authority,
         seeds = [EIGHTFISH_SEED],
         bump,
     )]
     pub eight_fish: Account<'info, EightfishStorage>,
 
     #[account(mut)]
-    pub payer: Signer<'info>,
-
-    pub compression_program: Program<'info, SplAccountCompression>,
-    pub noop_program: Program<'info, Noop>,
+    pub authority: Signer<'info>,
 }
 
 #[derive(Accounts)]
@@ -85,6 +70,7 @@ pub struct UpdataIndexInstruction<'info> {
         has_one = merkle_tree,
     )]
     pub tree_controller: Account<'info, Controller>,
+
     #[account(mut)]
     pub payer: Signer<'info>,
 
@@ -94,58 +80,28 @@ pub struct UpdataIndexInstruction<'info> {
 
 #[derive(Accounts)]
 pub struct WasmUpgradeInstruction<'info> {
-    pub authority: Signer<'info>,
-
-    /// CHECK: key is checked
-    #[account(mut)]
-    pub merkle_tree: AccountInfo<'info>,
-
-    #[account(
-        seeds = [CONTROLLER_SEED],
-        bump,
-        has_one = merkle_tree,
-    )]
-    pub tree_controller: Account<'info, Controller>,
-
     #[account(
         mut,
+        has_one = authority,
         seeds = [EIGHTFISH_SEED],
         bump,
     )]
     pub eight_fish: Account<'info, EightfishStorage>,
 
     #[account(mut)]
-    pub payer: Signer<'info>,
-
-    pub compression_program: Program<'info, SplAccountCompression>,
-    pub noop_program: Program<'info, Noop>,
+    pub authority: Signer<'info>,
 }
 
 #[derive(Accounts)]
 pub struct DisableWasmUpgradeFlagInstruction<'info> {
-    pub authority: Signer<'info>,
-
-    /// CHECK: key is checked
-    #[account(mut)]
-    pub merkle_tree: AccountInfo<'info>,
-
-    #[account(
-        seeds = [CONTROLLER_SEED],
-        bump,
-        has_one = merkle_tree,
-    )]
-    pub tree_controller: Account<'info, Controller>,
-
     #[account(
         mut,
+        has_one = authority,
         seeds = [EIGHTFISH_SEED],
         bump,
     )]
     pub eight_fish: Account<'info, EightfishStorage>,
 
     #[account(mut)]
-    pub payer: Signer<'info>,
-
-    pub compression_program: Program<'info, SplAccountCompression>,
-    pub noop_program: Program<'info, Noop>,
+    pub authority: Signer<'info>,
 }
